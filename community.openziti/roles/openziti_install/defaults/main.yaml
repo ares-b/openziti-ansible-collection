@@ -1,0 +1,40 @@
+---
+
+# These variable are constants
+# /!\ DO NOT EDIT THEM /!\
+# Unless you know what you're doing
+
+openziti_cache_host: "\
+  {% if openziti_cache_localhost %}\
+  localhost\
+  {% else %}\
+  {{ groups['cache_server'][0] }}\
+  {% endif %}"
+
+openziti_metadata_file_name: "versions.info"
+
+openziti_repository_url: "https://github.com/openziti"
+
+openziti_core_repository_url: "https://github.com/openziti/ziti.git"
+openziti_core_metadata_url: "https://api.github.com/repos/openziti/ziti\
+  /releases/latest"
+
+openziti_controller_config_file: "\
+  {% if ['ziti_controller', 'ziti-router'] in openziti_components %}\
+  ctrl.with.edge.yml\
+  {% else %}
+  ctrl.yml\
+  {% endif %}"
+openziti_edge_router_config_file: "edge.router.yml"
+
+openziti_cache_core_sources_path: "{{ openziti_cache_downloads_dir }}\
+  /ziti_{{ openziti_core_version }}"
+openziti_cache_config_path: "{{ openziti_cache_core_sources_path }}/etc"
+
+openziti_remote_configuration_path: "{{ openziti_remote_path }}/config"
+openziti_remote_logs_path: "{{ openziti_remote_path }}/logs"
+openziti_remote_pki_path: "{{ openziti_remote_path }}/pki"
+
+openziti_config_files:
+  ziti-controller: "{{ openziti_controller_config_file }}"
+  ziti-router: "{{ openziti_edge_router_config_file }}"

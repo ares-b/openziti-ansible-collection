@@ -1,0 +1,26 @@
+---
+
+openziti_cache_localhost: true
+
+openziti_core_version: latest
+
+openziti_remote_path: /opt/openziti
+
+openziti_cache_downloads_dir: /tmp/openziti_downloads
+
+openziti_network_name: "openziti_overlay_network"
+
+openziti_external_dns: "{{ ansible_default_ipv4.address }}"
+openziti_external_ip: "{{ ansible_default_ipv4.address }}"
+
+openziti_controller_ports:
+  rest_api: 8441
+  management_api: 6262
+openziti_edge_router_ports:
+  edge_connections: 8442
+  fabric_links: 10080
+
+openziti_configuration:
+  controller:
+    edge_enabled: true
+  router:
