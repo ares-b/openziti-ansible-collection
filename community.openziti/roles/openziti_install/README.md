@@ -1,18 +1,11 @@
-# OpenZiti Download
-This role downloads the OpenZiti binaries from Github releases and puts each Ziti component (controller, edge, tunnel, etc) on the appropriate host using host's group name.
-
-## TODO :
-- Find a way to support specific version download from Ziti Console
-- Maybe set OpenZiti components in host vars and not host groups
-- Support version upgrades
+# OpenZiti Install
+This role installs and configures OpenZiti components.
 
 ## Usage
 
 ### Sudo Password
 Some tasks needs to be executed with sudo privileges, when using this role, make sure you have a safe way of storing your sudo passwords.
 For example, you could use `ansible-vault` and update your hosts file with the key-value `ansible_become_pass="{{ my_host_become_pass }}"`.
-
-When using your localhost as the `cache-server` (i.e `openziti_cache_localhost` = `true`), run your playbooks with `-K` option, because this role needs sudo privileges to execture some tasks on the caching server.
 
 ### Example hosts
 ```

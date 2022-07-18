@@ -19,12 +19,7 @@ openziti_core_repository_url: "https://github.com/openziti/ziti.git"
 openziti_core_metadata_url: "https://api.github.com/repos/openziti/ziti\
   /releases/latest"
 
-openziti_controller_config_file: "\
-  {% if ['ziti_controller', 'ziti-router'] in openziti_components %}\
-  ctrl.with.edge.yml\
-  {% else %}
-  ctrl.yml\
-  {% endif %}"
+openziti_controller_config_file: "ctrl.with.edge.yml"
 openziti_edge_router_config_file: "edge.router.yml"
 
 openziti_cache_core_sources_path: "{{ openziti_cache_downloads_dir }}\
@@ -38,3 +33,5 @@ openziti_remote_pki_path: "{{ openziti_remote_path }}/pki"
 openziti_config_files:
   ziti-controller: "{{ openziti_controller_config_file }}"
   ziti-router: "{{ openziti_edge_router_config_file }}"
+
+openziti_controller_name: "ziti-controller"
