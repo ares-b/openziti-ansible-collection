@@ -11,7 +11,7 @@ v: 3
 #  memory:
 #    path: ctrl.memprof
 
-db: "{{ openziti_db_path }}"
+db: "{{ openziti_controller.db_path }}"
 
 identity:
   cert: "{{ openziti_controller.identitiy.cert }}"
