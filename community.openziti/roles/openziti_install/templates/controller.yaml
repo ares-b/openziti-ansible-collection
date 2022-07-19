@@ -69,7 +69,7 @@ identity:
     #
     #rerouteCap:         4
 
-# the endpoint that routers will connect to the controller over.
+# the endpoint that routers will connect over to the controller over.
 ctrl:
   #options:
   # (optional) settings
@@ -125,7 +125,7 @@ edge:
     # sessionTimeout - optional, default {{ .Controller.Edge.APISessionTimeout.Minutes }}m
     # The number of minutes before an Edge API session will time out. Timeouts are reset by
     # API requests and connections that are maintained to Edge Routers
-    sessionTimeout: {{ openziti_controller.edge.api.timeout }}m
+    sessionTimeout: {{ openziti_controller.edge.api.session_timeout }}m
     # address - required
     # The default address (host:port) to use for enrollment for the Client API. This value must match one of the addresses
     # defined in this Controller.WebListener.'s bindPoints.
@@ -145,14 +145,14 @@ edge:
       # duration - optional, default {{ .Controller.EdgeIdentityDuration.Minutes }}m
       # The length of time that a Ziti Edge Identity enrollment should remain valid. After
       # this duration, the enrollment will expire and no longer be usable.
-      duration: {{ openziti_controller.edge.enrollment.identity.duration }}m
+      duration: {{ openziti_controller.edge.enrollment.edge_identity.duration }}m
     # edgeRouter - Optional
     # A section for edge router enrollment specific settings.
     edgeRouter:
       # duration - optional, default {{ .Controller.EdgeRouterDuration.Minutes }}m
       # The length of time that a Ziti Edge Router enrollment should remain valid. After
       # this duration, the enrollment will expire and no longer be usable.
-      duration: {{ openziti_controller.edge.enrollment.router.duration }}m
+      duration: {{ openziti_controller.edge.enrollment.edge_router.duration }}m
 
 # web
 # Defines webListeners that will be hosted by the controller. Each webListener can host many APIs and be bound to many
@@ -201,6 +201,7 @@ web:
         options: {}
       - binding: edge-management
         options: {}
+
   - name: client-apis
     bindPoints:
       - interface: 0.0.0.0:8441
@@ -209,69 +210,3 @@ web:
     apis:
       - biding: edge-client
         options: {}
-  # name - required
-  # Provides a name for this listener, used for logging output. Not required to be unique, but is highly suggested.
-  - name: client-management
-    # bindPoints - required
-    # One or more bind points are required. A bind point specifies an interface (interface:port string) that defines
-    # where on the host machine the webListener will listen and the address (host:port) that should be used to
-    # publicly address the webListener(i.e. mydomain.com, localhost, 127.0.0.1). This public address may be used for
-    # incoming address resolution as well as used in responses in the API.
-    bindPoints:
-      #interface - required
-      # A host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
-      - interface: {{ .Controller.Edge.ListenerHostPort }}
-        # address - required
-        # The public address that external incoming requests will be able to resolve. Used in request processing and
-        # response content that requires full host:port/path addresses.
-        address: {{ .Controller.Edge.AdvertisedHostPort }}
-    # identity - optional
-    # Allows the webListener to have a specific identity instead of defaulting to the root 'identity' section.
-    identity:
-      ca:          "{{ .Controller.Edge.IdentityCA }}"
-      key:         "{{ .Controller.Edge.IdentityKey }}"
-      server_cert: "{{ .Controller.Edge.IdentityServerCert }}"
-      cert:        "{{ .Controller.Edge.IdentityCert }}"
-    # options - optional
-    # Allows the specification of webListener level options - mainly dealing with HTTP/TLS settings. These options are
-    # used for all http servers started by the current webListener.
-    options:
-      # idleTimeoutMs - optional, default {{ .Controller.WebListener.IdleTimeout.Milliseconds }}ms
-      # The maximum amount of idle time in milliseconds allowed for pipelined HTTP requests. Setting this too high
-      # can cause resources on the host to be consumed as clients remain connected and idle. Lowering this value
-      # will cause clients to reconnect on subsequent HTTPs requests.
-      idleTimeout: {{ .Controller.WebListener.IdleTimeout.Milliseconds }}ms  #http timeouts, new
-      # readTimeoutMs - optional, default {{ .Controller.WebListener.ReadTimeout.Milliseconds }}ms
-      # The maximum amount of time in milliseconds http servers will wait to read the first incoming requests. A higher
-      # value risks consuming resources on the host with clients that are acting bad faith or suffering from high latency
-      # or packet loss. A lower value can risk losing connections to high latency/packet loss clients.
-      readTimeout: {{ .Controller.WebListener.ReadTimeout.Milliseconds }}ms
-      # writeTimeoutMs - optional, default {{ .Controller.WebListener.WriteTimeout.Milliseconds }}ms
-      # The total maximum time in milliseconds that the http server will wait for a single requests to be received and
-      # responded too. A higher value can allow long-running requests to consume resources on the host. A lower value
-      # can risk ending requests before the server has a chance to respond.
-      writeTimeout: {{ .Controller.WebListener.WriteTimeout.Milliseconds }}ms
-      # minTLSVersion - optional, default {{ .Controller.WebListener.MinTLSVersion }}
-      # The minimum version of TSL to support
-      minTLSVersion: {{ .Controller.WebListener.MinTLSVersion }}
-      # maxTLSVersion - optional, default {{ .Controller.WebListener.MaxTLSVersion }}
-      # The maximum version of TSL to support
-      maxTLSVersion: {{ .Controller.WebListener.MaxTLSVersion }}
-    # apis - required
-    # Allows one or more APIs to be bound to this webListener
-    apis:
-      # binding - required
-      # Specifies an API to bind to this webListener. Built-in APIs are
-      #   - edge-management
-      #   - edge-client
-      #   - fabric-management
-      - binding: edge-management
-        # options - arg optional/required
-        # This section is used to define values that are specified by the API they are associated with.
-        # These settings are per API. The example below is for the 'edge-api' and contains both optional values and
-        # required values.
-        options: { }
-      - binding: edge-client
-        options: { }
-      - binding: fabric
-        options: { }
