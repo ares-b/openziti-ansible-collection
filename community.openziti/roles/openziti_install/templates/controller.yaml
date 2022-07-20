@@ -162,12 +162,12 @@ web:
     bindPoints:
       #interface - required
       # A host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
-      - interface: {{ .Controller.Edge.ListenerHostPort }}
+      - interface: {{ openziti_controller.web.management_api.interface.address }}:{{ openziti_controller.web.management_api.interface.port }}
         # address - required
         # The public address that external incoming requests will be able to resolve. Used in request processing and
         # response content that requires full host:port/path addresses.
-        address: {{ .Controller.Edge.AdvertisedHostPort }}
-    identity:
+        address: {{ openziti_controller.web.management_api.advertised_address }}:{{ openziti_controller.web.management_api.advertised_port }}
+-    identity:
       ca: "{{ .Controller.Edge.IdentityCA }}"
       key: "{{ .Controller.Edge.IdentityKey }}"
       server_cert: "{{ .Controller.Edge.IdentityServerCert }}"
