@@ -1,0 +1,68 @@
+v: 3
+
+identity:
+  cert:                 "/examplerouter.cert"
+  server_cert:          "/examplerouter.server.chain.cert"
+  key:                  "/examplerouter.key"
+  ca:                   "/examplerouter.cas"
+
+ctrl:
+  endpoint:             tls:instance-20220717-1614:6262
+
+link:
+  dialers:
+    - binding: transport
+  listeners:
+    - binding:          transport
+      bind:             tls:0.0.0.0:10080
+      advertise:        tls:instance-20220717-1614:10080
+      options:
+        outQueueSize:   4
+
+listeners:
+# bindings of edge and tunnel requires an "edge" section below
+  - binding: edge
+    address: tls:0.0.0.0:3022
+    options:
+      advertise: instance-20220717-1614:3022
+      connectTimeoutMs: 1000
+      getSessionTimeout: 60s
+  - binding: tunnel
+    options:
+      mode: host #tproxy|host
+
+
+edge:
+  csr:
+    country: US
+    province: NC
+    locality: Charlotte
+    organization: NetFoundry
+    organizationalUnit: Ziti
+    sans:
+      dns:
+        - instance-20220717-1614
+        - localhost
+      ip:
+        - "127.0.0.1"
+
+#transport:
+#  ws:
+#    writeTimeout: 10
+#    readTimeout: 5
+#    idleTimeout: 5
+#    pongTimeout: 60
+#    pingInterval: 54
+#    handshakeTimeout: 10
+#    readBufferSize: 4096
+#    writeBufferSize: 4096
+#    enableCompression: true
+#    server_cert: /examplerouter.server.chain.cert
+#    key: /examplerouter.key
+
+forwarder:
+  latencyProbeInterval: 10
+  xgressDialQueueLength: 1000
+  xgressDialWorkerCount: 128
+  linkDialQueueLength: 1000
+  linkDialWorkerCount: 32

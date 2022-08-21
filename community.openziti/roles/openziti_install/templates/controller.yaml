@@ -1,6 +1,4 @@
 ---
-# Made from
-# https://github.com/openziti/ziti/blob/release-next/ziti/cmd/ziti/cmd/config_templates/controller.yml
 
 v: 3
 
@@ -19,39 +17,39 @@ identity:
   key: "{{ openziti_controller.identity.key }}"
   ca: "{{ openziti_controller.identity.ca }}"
 
-# Network Configuration
-#
+#Network Configuration
+
 # Configure how the controller will establish and manage the overlay network, and routing operations on top of
 # the network.
 #
-#network:
+network:
 
   # routeTimeoutSeconds controls the number of seconds the controller will wait for a route attempt to succeed.
-  #routeTimeoutSeconds:  10
+  routeTimeoutSeconds: 10
 
   # createCircuitRetries controls the number of retries that will be attempted to create a path (and terminate it)
   # for new circuits.
-  #createCircuitRetries: 2
+  createCircuitRetries: 2
 
   # pendingLinkTimeoutSeconds controls how long we'll wait before creating a new link between routers where
   # there isn't an established link, but a link request has been sent
-  #pendingLinkTimeoutSeconds: 10
+  pendingLinkTimeoutSeconds: 10
 
   # Defines the period that the controller re-evaluates the performance of all of the circuits
   # running on the network.
   #
-  #cycleSeconds:         15
+  cycleSeconds: 15
 
   # Sets router minimum cost. Defaults to 10
-  #minRouterCost: 10
+  minRouterCost: 10
 
   # Sets how often a new control channel connection can take over for a router with an existing control channel connection
   # Defaults to 1 minute
-  #routerConnectChurnLimit: 1m
+  routerConnectChurnLimit: 1m
 
   # Sets the latency of link when it's first created. Will be overwritten as soon as latency from the link is actually
   # reported from the routers. Defaults to 65 seconds.
-  #initialLinkLatency: 65s
+  initialLinkLatency: 65s
 
   #smart:
     #
@@ -60,26 +58,26 @@ identity:
     # then the upper limit of circuits that will be re-routed in this `cycleSeconds` period will be limited to 
     # 2 (2% of 100).
     #
-    #rerouteFraction:    0.02
+    rerouteFraction: 0.02
     #
     # Defines the hard upper limit of underperforming circuits that are candidates to be re-routed. If smart 
     # routing detects 100 circuits that are underperforming, and `smart.rerouteCap` is set to `1`, and 
     # `smart.rerouteFraction` is set to `0.02`, then the upper limit of circuits that will be re-routed in this 
     # `cycleSeconds` period will be limited to 1.
     #
-    #rerouteCap:         4
+    rerouteCap: 4
 
 # the endpoint that routers will connect over to the controller over.
 ctrl:
   #options:
   # (optional) settings
   # set the maximum number of connect requests that are buffered and waiting to be acknowledged ({{ .Controller.MinQueuedConnects }} to {{ .Controller.MaxQueuedConnects }}, default {{ .Controller.DefaultQueuedConnects }})
-  #maxQueuedConnects:      {{ .Controller.DefaultQueuedConnects }}
+  maxQueuedConnects:      {{ .Controller.DefaultQueuedConnects }}
   # the maximum number of connects that have  begun hello synchronization ({{ .Controller.MinOutstandingConnects }} to {{ .Controller.MaxOutstandingConnects }}, default {{ .Controller.DefaultOutstandingConnects }})
-  #maxOutstandingConnects: {{ .Controller.DefaultOutstandingConnects }}
+  maxOutstandingConnects: {{ .Controller.DefaultOutstandingConnects }}
   # the number of milliseconds to wait before a hello synchronization fails and closes the connection ({{ .Controller.MinConnectTimeout.Milliseconds }}ms to {{ .Controller.MaxConnectTimeout.Milliseconds }}ms, default: {{ .Controller.DefaultConnectTimeout.Milliseconds }}ms)
-  #connectTimeoutMs:       {{ .Controller.DefaultConnectTimeout.Milliseconds }}
-  listener: tls:{{ openziti_controller.control.listener.address }}:{{ openziti_controller.control.listener.port }}
+  connectTimeoutMs:       {{ .Controller.DefaultConnectTimeout.Milliseconds }}
+  listener: tls:{{ openziti_controller.ctrl.listener.address }}:{{ openziti_controller.ctrl.listener.port }}
 
 # the endpoint that management tools connect to the controller over.
 mgmt:
@@ -91,7 +89,7 @@ mgmt:
   #maxOutstandingConnects: {{ .Controller.DefaultOutstandingConnects }}
   # the number of milliseconds to wait before a hello synchronization fails and closes the connection ({{ .Controller.MinConnectTimeout.Milliseconds }}ms to {{ .Controller.MaxConnectTimeout.Milliseconds }}ms, default: {{ .Controller.DefaultConnectTimeout.Milliseconds }}ms)
   #connectTimeoutMs:       {{ .Controller.DefaultConnectTimeout.Milliseconds }}
-  listener: tls:{{ openziti_controller.management.listener.address }}:{{ openziti_controller.management.listener.port }}
+  listener: tls:{{ openziti_controller.mgmt.listener.address }}:{{ openziti_controller.mgmt.listener.port }}
 
 #metrics:
 #  influxdb:
@@ -107,23 +105,22 @@ mgmt:
 healthChecks:
   boltCheck:
     # How often to try entering a bolt read tx. Defaults to {{ .Controller.HealthCheck.Interval.Seconds }} seconds
-    interval: {{ openziti_controller.health_checks.interval }}s
+    interval: {{ openziti_controller.healthchecks.interval }}s
     # When to time out the check. Defaults to {{ .Controller.HealthCheck.Timeout.Seconds }} seconds
-    timeout: {{ openziti_controller.health_checks.timeout }}s
+    timeout: {{ openziti_controller.healthchecks.timeout }}s
     # How long to wait before starting the check. Defaults to {{ .Controller.HealthCheck.InitialDelay.Seconds }} seconds
-    initialDelay: {{ openziti_controller.health_checks.initial_delay }}s
+    initialDelay: {{ openziti_controller.healthchecks.initial_delay }}s
 
 # By having an 'edge' section defined, the ziti-controller will attempt to parse the edge configuration. Removing this
 # section, commenting out, or altering the name of the section will cause the edge to not run.
 edge:
   # This section represents the configuration of the Edge API that is served over HTTPS
   api:
-    #(optional, default {{ .Controller.Edge.APIActivityUpdateInterval.Seconds }}s) Alters how frequently heartbeat and last activity values are persisted
+    # (optional, default 90s) Alters how frequently heartbeat and last activity values are persisted
     # activityUpdateInterval: {{ .Controller.Edge.APIActivityUpdateInterval.Seconds }}s
-    #(optional, default {{ .Controller.Edge.APIActivityUpdateBatchSize }}) The number of API Sessions updated for last activity per transaction
+    # (optional, default 250) The number of API Sessions updated for last activity per transaction
     # activityUpdateBatchSize: {{ .Controller.Edge.APIActivityUpdateBatchSize }}
-    # sessionTimeout - optional, default {{ .Controller.Edge.APISessionTimeout.Minutes }}m
-    # The number of minutes before an Edge API session will time out. Timeouts are reset by
+    # (optional, default 30m) The number of minutes before an Edge API session will time out. Timeouts are reset by
     # API requests and connections that are maintained to Edge Routers
     sessionTimeout: {{ openziti_controller.edge.api.session_timeout }}m
     # address - required
@@ -137,19 +134,17 @@ edge:
     # a signing certificate from the PKI that the Ziti environment is using to sign certificates. The signingCert.cert
     # will be added to the /.well-known CA store that is used to bootstrap trust with the Ziti Controller.
     signingCert:
-      cert: {{ openziti_controller.edge.enrollment.signingCert.enrollment.cert }}
-      key: {{ openziti_controller.edge.enrollment.signingCert.enrollment.key }}
+      cert: {{ openziti_controller.edge.enrollment.signing_cert.enrollment.cert }}
+      key: {{ openziti_controller.edge.enrollment.signing_cert.enrollment.key }}
     # edgeIdentity - optional
     # A section for identity enrollment specific settings
     edgeIdentity:
-      # duration - optional, default {{ .Controller.EdgeIdentityDuration.Minutes }}m
       # The length of time that a Ziti Edge Identity enrollment should remain valid. After
       # this duration, the enrollment will expire and no longer be usable.
       duration: {{ openziti_controller.edge.enrollment.edge_identity.duration }}m
     # edgeRouter - Optional
     # A section for edge router enrollment specific settings.
     edgeRouter:
-      # duration - optional, default {{ .Controller.EdgeRouterDuration.Minutes }}m
       # The length of time that a Ziti Edge Router enrollment should remain valid. After
       # this duration, the enrollment will expire and no longer be usable.
       duration: {{ openziti_controller.edge.enrollment.edge_router.duration }}m

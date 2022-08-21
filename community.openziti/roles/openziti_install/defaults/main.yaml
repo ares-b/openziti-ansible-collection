@@ -4,34 +4,73 @@
 # /!\ DO NOT EDIT THEM /!\
 # Unless you know what you're doing
 
-openziti_cache_host: "\
-  {% if openziti_cache_localhost %}\
-  localhost\
-  {% else %}\
-  {{ groups['cache_server'][0] }}\
-  {% endif %}"
-
 openziti_metadata_file_name: "versions.info"
 
-openziti_repository_url: "https://github.com/openziti"
-
-openziti_core_repository_url: "https://github.com/openziti/ziti.git"
-openziti_core_metadata_url: "https://api.github.com/repos/openziti/ziti\
-  /releases/latest"
-
-openziti_controller_config_file: "ctrl.with.edge.yml"
-openziti_edge_router_config_file: "edge.router.yml"
-
-openziti_cache_core_sources_path: "{{ openziti_cache_downloads_dir }}\
-  /ziti_{{ openziti_core_version }}"
-openziti_cache_config_path: "{{ openziti_cache_core_sources_path }}/etc"
-
+# Paths
 openziti_remote_configuration_path: "{{ openziti_remote_path }}/config"
 openziti_remote_logs_path: "{{ openziti_remote_path }}/logs"
 openziti_remote_pki_path: "{{ openziti_remote_path }}/pki"
+openziti_controller_db_path: "{{ openziti_remote_path }}/{{ controller_name }}.db"
 
-openziti_config_files:
-  ziti-controller: "{{ openziti_controller_config_file }}"
-  ziti-router: "{{ openziti_edge_router_config_file }}"
+# PKI
+openziti_controller_intermediate_path: "{{ openziti_remote_pki_path }}/{{ controller_name }}_intermediate"
+openziti_controller_signing_intermediate_path: "{{ openziti_remote_pki_path }}/{{ controller_name }}_signing_intermediate"
 
-openziti_controller_name: "ziti-controller"
+openziti_edge_controller_intermediate_path: "{{ openziti_remote_pki_path }}/{{ edge_controller_name }}_intermediate"
+
+## Controller configuration
+
+openziti_controller_config:
+  db: "{{ openziti_controller_db_path }}"
+  identity:
+    cert: "{{ openziti_controller_intermediate_path }}/certs/{{ controller_name }}-client.cert"
+    server_cert: "{{ openziti_controller_intermediate_path }}/certs/{{ controller_name }}-server.chain.pem"
+    key: "{{ openziti_controller_intermediate_path }}/keys/{{ controller_name }}-server.key"
+    ca: "{{ openziti_controller_intermediate_path }}/cas.pem"
+  network:
+    route_timeout_seconds: "{{ controller_network_route_timeout_seconds }}"
+    create_circuit_retries: "{{ controller_network_create_circuit_retries }}"
+    pending_link_timeout_seconds: "{{ controller_network_pending_link_timeout_seconds }}"
+    cycle_seconds: "{{ controller_network_cycle_seconds }}"
+    min_router_cost: "{{ controller_network_min_router_cost }}"
+    router_connect_churn_limit: "{{ controller_network_router_connect_churn_limit }}"
+    initial_link_latency: "{{ controller_network_initial_link_latency }}"
+  smart:
+    reroute_fraction: "{{ controller_smart_reroute_fraction }}"
+    reroute_cap: "{{ controller_smart_reroute_cap }}"
+  ctrl:
+    max_queued_connects: "{{ controller_management_max_queued_connects }}"
+    max_outstanding_connects: "{{ controller_management_max_outstanding_connects }}"
+    connect_timeout_ms: "{{ controller_management_connect_timeout_ms }}"
+    listener:
+      address: ""
+      port: "{{ controller_management_port }}"
+  health_checks:
+    interval: "{{ controller_health_checks_interval }}"
+    timeout: "{{ controller_health_checks_timeout }}"
+    initial_delay: "{{ controller_health_checks_initial_delay }}"
+  edge:
+    api:
+      session_timeout: "{{ controller_edge_api_session_timeout }}"
+      activity_update_interval: "{{ controller_edge_api_activity_update_interval }}"
+      activity_update_batch_size: "{{ controller_edge_api_activity_update_batch_size }}"
+      address: ""
+      port: "{{ controller_edge_api_port }}"
+    enrollment:
+      signing_cert:
+        cert: "{{ openziti_controller_signing_intermediate_path }}/certs/{{ controller_name }}.cert"
+        key: "{{ openziti_controller_signing_intermediate_path }}/keys/{{ controller_name }}.key"
+      edge_identity:
+        duration: "{{ controller_edge_enrollment_edge_identity_duration }}"
+      edge_router:
+        duration: "{{ controller_edge_enrollment_edge_router_duration }}"
+  web:
+    management_apis:
+      bind_points:
+        - interface: "{% if controller_web_dark %}127.0.0.1:{{ controller_edge_api_port }}{% else %}0.0.0.0:{{ controller_edge_api_port }}{% endif %}"
+          address: "{% if controller_web_dark %}127.0.0.1:{{ controller_edge_api_port }}{% else %}ip_ici:{{ controller_edge_api_port }}{% endif %}"
+      identity:
+        ca: "{{ openziti_edge_controller_intermediate_path }}/certs/"
+        key:
+        server_cert:
+        cert:
