@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 from ansible.module_utils.basic import AnsibleModule
 from abc import ABC, abstractmethod
 
@@ -21,14 +21,13 @@ class OpenZitiCli(ABC):
         self.cmd_rc, self.cmd_out, self.cmd_err = self.module.run_command(self.cmd)
 
     @abstractmethod
-    def is_changed(self):
+    def is_changed(self) -> bool:
         pass
 
     @abstractmethod
-    def prepare_cli(self):
+    def _prepare_cli(self) -> None:
         pass
 
     @abstractmethod
-    def get_missing_args(self):
+    def _check_cli_args(self) -> List[str]:
         pass
-
