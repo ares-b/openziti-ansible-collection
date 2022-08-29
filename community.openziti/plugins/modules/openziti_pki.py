@@ -7,6 +7,38 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = '''
+---
+module: openziti_pki
+author:
+    - "Arslane BAHLEL"
+version: 0.1.0
+short_description: Create PKI for OpenZiti
+description:
+    - Create Certificate authority 
+    - Create self signed Root certificates
+    - Create self signed Intermediate certificates
+    - Create self signed client/server certificates
+options:
+    state:
+        description:
+            - Wheter to create or remove the PKI component
+        choices: [ 'present', 'absent' ]
+        type: str
+        default: present
+    component:
+        description:
+            - PKI component to handle
+        choices: [ 'ca', 'intermediate', 'client', 'server' ]
+        type: str
+        default: ca
+    ca_name:
+        description:
+            - Name of the certificate authority 
+            - Required if state = present
+        type: str
+    file_name:
+        description:
+            - 
 '''
 
 RETURN = '''
@@ -15,6 +47,8 @@ RETURN = '''
 from os.path import isdir
 from os.path import join as path_join
 from os import makedirs
+from shutil import rmtree
+
 from ansible_collections.community.openziti.plugins.module_utils.openziti_cli import OpenZitiCli
 
 from ansible.module_utils.basic import AnsibleModule
@@ -31,15 +65,18 @@ class OpenZitiPki(OpenZitiCli):
     def __init__(self, module: AnsibleModule):
         super().__init__(module)
         self.component = self.parameters["component"]
-        self.mode = self.parameters["mode"]
+        self.state = self.parameters["state"]
+        self.component_path = path_join(self.parameters["pki_path"], self.parameters["file_name"])
+        self.output_msg = None
 
-        self._check_cli_args()
-        self._prepare_cli()
+        if self.state == "present":
+            self._check_cli_args()
+            self._prepare_cli()
 
     def _prepare_cli(self) -> None:
         self.cmd.extend([
             "pki",
-            f"{self.mode}",
+            "create",
             f"{self.component}",
             "--ca-name",
             f"{self.parameters['ca_name']}",
@@ -118,34 +155,42 @@ class OpenZitiPki(OpenZitiCli):
         missing_args = [arg for arg in self.required_args[self.component] if self.parameters[arg] is None]
 
         if missing_args:
-            raise ValueError(f"{self.mode} component {self.component} requires arguments [{', '.join(missing_args)}].")
+            raise ValueError(f"creating component {self.component} requires arguments [{', '.join(missing_args)}].")
 
     def is_changed(self) -> bool:
+        if self.state == "present":
+            if isdir(self.component_path):
+                self.diff = { "before": self.component_path, "after": self.component_path }
+                self.output_msg = f"PKI {self.component} {self.parameters['file_name']} already exists."
+                return False
+            self.diff = { "before": None, "after": self.component_path }
+            self.output_msg = f"PKI {self.component} {self.parameters['file_name']} created."
+            return True
+                
+        elif self.state == "absent":
+            self.diff = { "before": self.component_path, "after": None }
+            self.output_msg = f"PKI {self.component} {self.parameters['file_name']} deleted."
+            return True
         
-        component_path = path_join(self.parameters["pki_path"], self.parameters["file_name"])
+        raise ValueError("state must be in ['present', 'absent']")
 
-        if isdir(component_path):
-            self.diff = { "before": component_path, "after": component_path }
-            self.output_msg = f"PKI {self.component} {self.parameters['file_name']} already exists."
-            return False
-
-        self.diff = { "before": None, "after": component_path }
-        self.output_msg = f"PKI {self.component} {self.parameters['file_name']} created."
-        return True
+        
 
 
 def main():
     module = AnsibleModule(
         supports_check_mode=True,
         argument_spec=dict(
-            ca_name=dict(required=True, type='str'),
+            state=dict(choices=['present', 'absent'], default='present'),
+            component=dict(choices=['ca', 'intermediate', 'client', 'server'], default='ca'),
+            ca_name=dict(type='str', default=None),
             file_name=dict(required=True, type='str'),
             name=dict(type='str', default=None),
             key_file=dict(type='str', default=None),
             email=dict(type='str', default=None),
             dns=dict(type='str', default=None),
             ip=dict(type='str', default=None),
-            pki_path=dict(required=True, type='str', default=None),
+            pki_path=dict(required=True, type='str'),
             max_path_len=dict(type='int', default=None),
             private_key_size=dict(type='int', default=None),
             expire_limit=dict(type='int', default=None),
@@ -154,23 +199,24 @@ def main():
             organization=dict(default='NetFroundry', type='str'),
             organizational_unit=dict(default='ADV-DEV', type='str'),
             province=dict(default='NC', type='str'),
-            mode=dict(choices=['create'], default='create'),
-            component=dict(choices=['ca', 'intermediate', 'client', 'server'], default='ca'),
             ziti_cli_path=dict(type='str', default =None),
         )
     )
-    
+
     try:
         ziti_cli = OpenZitiPki(module)
     except ValueError as error:
         module.fail_json(str(error))
-        
-    changed = ziti_cli.is_changed()
     
+    changed = ziti_cli.is_changed()
+
     if not module.check_mode:
-        if not isdir(module.params['pki_path']):
-            makedirs(module.params['pki_path'])
-        ziti_cli.execute()
+        if ziti_cli.state == 'absent':
+            rmtree(ziti_cli.component_path)
+        else:
+            if not isdir(module.params['pki_path']):
+                makedirs(module.params['pki_path'])
+            ziti_cli.execute()
 
     module.exit_json(changed=changed, msg=ziti_cli.output_msg, diff=ziti_cli.diff)
 
