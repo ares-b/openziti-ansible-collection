@@ -119,9 +119,6 @@ options:
             - Province/State
         type: str
         default: NC
-    
-        
-
 '''
 
 RETURN = '''

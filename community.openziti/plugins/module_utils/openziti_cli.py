@@ -1,4 +1,5 @@
 from typing import List
+from typing_extensions import Self
 from ansible.module_utils.basic import AnsibleModule
 from abc import ABC, abstractmethod
 
@@ -20,7 +21,7 @@ class OpenZitiCli(ABC):
         """
         return not (self.parameters["ziti_cli_path"]  is None) or not (self.module.get_bin_path("ziti") is None)
 
-    def execute(self):
+    def execute(self) -> None:
         """Executes the CLI command.
         """
         if not self._is_ziti_installed():
