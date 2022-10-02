@@ -38,7 +38,90 @@ options:
         type: str
     file_name:
         description:
-            - 
+            - File name in which to store the PKI file
+        type: str
+        required: true
+    name:
+        description:
+            - Common name of the PKI component
+            - Required if component != ca
+        type: str
+    pki_path:
+        description:
+            - Directory in which to store CA
+    key_file:
+        description:
+            - Name of file (under chosen CA) containing private key to use when generating PKI component certificate
+            - Required if component != ca
+        type: str
+    max_path_len:
+        description:
+            - Intermediate maximum path length
+        type: int
+        default: -1
+    private_key_size:
+        description:
+            - Size of the private key
+            - 2048 by default for Client PKI component
+            - 4096 by default for CA, Server and Intermediate PKI components
+        type: int
+    expire_limit:
+        description:
+            - Expiration limit in days
+            - 3650 days for CA
+            - 365 days for other components
+        type: int
+    ziti_cli_path:
+        description:
+            - Path to Ziti executable
+            - Not required if set on PATH variable
+        type: str
+    email:
+        description:
+            - Email addr(s) to add to Subject Alternate Name (SAN) for new Client certificate
+            - Usable only when component = client
+            - If multiple Emails, separate them with a comma
+        type: str
+    dns:
+        description:
+            - DNS name(s) to add to Subject Alternate Name (SAN) for new Server certificate
+            - Usable only when component = server
+            - If multiple DNS names, separate them with a comma
+        type: str
+    ip:
+        description:
+            - IP addr(s) to add to Subject Alternate Name (SAN) for new Server certificate
+            - Usable only when component = server
+            - If multiple IPs, separate them with a comma
+        type: str
+    country:
+        description:
+            - Country
+        type: str
+        default: US
+    locality:
+        description:
+            - Locality/Location
+        type: str
+        default: Charlotte
+    organization:
+        description:
+            - Organization
+        type: str
+        default: NetFoundry
+    organizational_unit:
+        description:
+            - Organizational Unit
+        type: str
+        default: ADV-DEV
+    province:
+        description:
+            - Province/State
+        type: str
+        default: NC
+    
+        
+
 '''
 
 RETURN = '''
